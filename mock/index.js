@@ -2,7 +2,7 @@ const express = require('express'); //引入express模块
 const Mock = require('mockjs'); //引入mock模块
 const modules = require('./modules');
 
-let app = express(); //实例化express
+let app = express(); //实例化express··
 
 /**
  * 配置路由
