@@ -133,45 +133,160 @@ export const checkNumber = (ruleOption, value, deviceName) => {
   return message
 }
 
+
+export const isY = value => {
+  if(value && value === "Y") {
+    return true
+  }else{
+    return false
+  }
+}
+
+export const strFor = (object, flag, seat) => {
+  let regArr = [];
+  if(isY(object.english)) {//英文
+    if((isY(object.lowercase) && isY(object.uppercase)) || (!isY(object.lowercase) &&!isY(object.uppercase))) {
+      regArr.push("a-zA-Z"); //不区分大小写
+    }else {
+      if(isY(object.lowercase)) {// 小写
+        regArr.push("a-z");
+      }
+      if(isY(object.uppercase)) {// 大写
+        regArr.push("A-Z");
+      }
+    }
+  }
+  
+  if(isY(object.number)) {// 数字
+    if(isY(object.nonzero)) {// 非零
+      regArr.push("1-9");
+    }else {
+      regArr.push("0-9");
+    }
+  }
+
+  if(isY(object.other) && object.otherVlue) {// 其他复选框   其他数值
+    if(flag) {
+      for(let i = 0, len = object.otherVlue.length; i < len; i++) {
+        regArr.push(object.otherVlue[i]);
+      }
+    }else {
+      regArr.push(object.otherVlue);
+    }
+  }
+
+  if(flag){
+    let start, end;
+    let mustArr = regArr.map(item => {
+      if(seat === "start") {
+        start = item;
+      }else if(seat === "end") {
+        end = item;
+      }
+      return `[${item}]`
+    })
+
+    if(start) {
+      let index = mustArr.indexOf(start);
+      mustArr.splice(index, 1);
+      mustArr.unshift(`^[${start}]`);
+    }
+
+    if(end) {
+      let index = mustArr.indexOf(end);
+      mustArr.splice(index, 1);
+      mustArr.push(`[${end}]$`);
+    }
+
+    if(seat) {
+      if(seat) {
+        if(mustArr.length > 1) {
+          console.log("字符开头或结尾校验规则定义错误");
+        }
+        return new RegExp(`${mustArr.join("")}`);
+      }
+    }else {
+      return new RegExp(`${mustArr.join("{1,}")}{1,}`);
+    }
+  }else {
+    return new RegExp(`[${regArr.join("")}]+`);
+  }
+}
+
 // 校验字符串
 export const checkString = (ruleOption, value) => {
   let message;
-  let length = ruleOption.stringLength.split('-');
-  if (value.length < length[0] || value.length > length[1]) {
-    message = `字符串长度为${ruleOption.stringLength}`
-  }
-  if (ruleOption.firstCharacterLetter === 'Y') {
-    if (!/^[a-zA-z]/.test(value)) {
-      message = `字符串必须以字母开头`
+  let mustIn, mustContain, startWith, endWith;
+  for(let key in ruleOption) {
+    if(key === "mustIn" && JSON.stringify(ruleOption.mustIn) !== "{}") {//全部为[或]
+      let reg = strFor(ruleOption.mustIn);
+      console.log("全部为[或]", reg);
+      mustIn = reg.test(value);
+      if(!mustIn) {
+        message = "不符合模板中 全部为[或] 定义的校验规则";
+      }
+    }
+    if(key === "mustContain" && JSON.stringify(ruleOption.mustContain) !== "{}") {// 必须含字符[且]
+      let reg = strFor(ruleOption.mustContain, true);
+      console.log("必须含字符[且]", reg);
+      mustContain = reg.test(value);
+      if(!mustContain){
+        message = "不符合模板中 必须含字符[且] 定义的校验规则";
+      }
+    }
+    if(key === "startWith" && JSON.stringify(ruleOption.startWith) !== "{}") {// 字符开头
+      let reg = strFor(ruleOption.startWith, true, "start");
+      console.log("字符开头", reg);
+      startWith = reg.test(value);
+      if(!startWith) {
+        message = "不符合模板中 字符开头 定义的校验规则";
+      }
+    }
+    if(key === "endWith" && JSON.stringify(ruleOption.endWith) !== "{}") {// 字符结尾
+      let reg = strFor(ruleOption.startWith, true, "end");
+      console.log("字符结尾", reg);
+      endWith = reg.test(value);
+      if(!endWith) {
+        message = "不符合模板中 字符结尾 定义的校验规则";
+      }
+    }
+    if(key === "notContain" && JSON.stringify(ruleOption.notContain) !== "{}") {// 不包含字符
+      if(isY(ruleOption.notContain.active)) {
+        let reg = new RegExp(ruleOption.notContain.value);
+        console.log("不可包含字符", reg);
+        if (reg.test(value)) {
+          message = `不可包含字符“${ruleOption.notContain.value}”`
+        }
+      }
+    }
+    if(key === "stringLength" && JSON.stringify(ruleOption.stringLength) !== "{}") {// 长度
+      if (value.length < ruleOption.stringLength.min || value.length > ruleOption.stringLength.max) {
+        message = `字符串长度为${ruleOption.stringLength.min}-${ruleOption.stringLength.max}`
+      }
+    }
+    if(key === "otherLimit" && JSON.stringify(ruleOption.otherLimit) !== "{}") {// 附加限制
+      // 不包含空格
+      if(isY(ruleOption.otherLimit.notContainSpace)) {
+        let regSpace = /(^\s+)|(\s+$)|\s+/g;
+        if(regSpace.test(value)) {
+          message = "附加限制: 不包含空格";
+        }      
+      }
+      // 非数字  
+      if(isY(ruleOption.otherLimit.notContainCN)) {
+        let regCN = /\d/;
+        if(regCN.test(value)) {
+          message = "附加限制: 非数字";
+        }       
+      }
+
     }
   }
-  if (ruleOption.notContainsCharacters) {
-    let reg = new RegExp(ruleOption.notContainsCharacters);
-    if (reg.test(value)) {
-      message = `不可包含字符“${ruleOption.notContainsCharacters}”`
-    }
+
+  if(ruleOption.message && ruleOption.message !== "") {
+    message = ruleOption.message;
   }
-  if (ruleOption.containsCharacters) {
-
-    const regJson = {
-      LOWERCASE: 'a-z',
-      CAPITAL: 'A-Z',
-      NUMBER: '0-9',
-      CHARACTER: "~'!@#￥$%^&*()-+_=:"
-    };
-
-    let regStr = [];
-    ruleOption.containsCharacters.forEach(item => {
-      regStr.push(regJson[item])
-    })
-
-    let containsReg = new RegExp(`^[${regStr.join("")}]+$`);
-    if(!containsReg.test(value)) {
-      message = `需包含字符串“${ruleOption.containsCharacters}”`
-    }
-    
-
-  }
+  
   return message
 }
 

@@ -59,11 +59,6 @@ class EditTableCell extends Component {
       rulesList.push({
         validator: (rule, value, callback) => this.validatorRules(value, callback, options, deviceName)
       })
-
-      // 配置项
-      // rulesList.push({
-      //   validator: (rule, value, callback) => this.validatorRules(value, callback, options, deviceName)
-      // })
     })
     return rulesList
   }

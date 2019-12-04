@@ -398,7 +398,7 @@ class State {
         {
           "id": "0F940827999D4BE18896F359BAE5EDB0",
           "chParamTableId": "B2FF4CAF8E1948DA9675BFDC0A310B41",
-          "colName": "sizeStr",
+          "colName": "sizeStr111",
           "colCode": "sizeStr",
           "inputType": "TEXT",
           "dataResourcesType": "MANUALl",
@@ -410,7 +410,7 @@ class State {
               "chParamTableColId": "0F940827999D4BE18896F359BAE5EDB0",
               "require": "Y",
               "validateType": "VALIDAT_STRING",
-              "validateContent": '{"containsCharacters": ["NUMBER","LOWERCASE","CHARACTER"],"firstCharacterLetter":"N","stringLength": "3-9","notContainsCharacters": "a"}',
+              "validateContent": '{"hide":"Y","mustIn":{"english":"Y","lowercase":"Y","uppercase":"N","number":"Y","nonzero":"Y","other":"Y","otherVlue":"@/"},"mustContain":{"english":"Y","lowercase":"Y","uppercase":"Y","number":"N","other":"N","otherVlue":""},"startWith":{"english":"Y","lowercase":"N","uppercase":"Y","number":"N","other":"N","otherVlue":""},"endWith":{"english":"Y","lowercase":"Y","uppercase":"N","number":"N","other":"N","otherVlue":""},"notContain":{"active":"Y","value":"a"},"stringLength":{"min":"5","max":100},"otherLimit":{"notContainSpace":"Y","notContainCN":"Y"},"message":""}',
               "id": "3B03047F6D394EF7A3ABAB8122A84A58"
             }
           ]
