@@ -1,9 +1,3 @@
-// const NUMBER_SYMBOL = {
-//   VALUE_CONTAINS_EQUAL,// 值包含等于
-//   VALUE_CONTAINS, // 值包含
-//   SUM_CONTAINS, // 和包含等于
-//   SUM_CONTAINS_EQUAL, // 和包含
-// }
 import state from '../../Store';
 
 export const checkForm = (rule, ruleOption, value, options, deviceName) => {
@@ -261,7 +255,7 @@ export const checkString = (ruleOption, value) => {
       }
     }
     if(key === "endWith" && JSON.stringify(ruleOption.endWith) !== "{}") {// 字符结尾
-      let reg = strFor(ruleOption.startWith, true, "end");
+      let reg = strFor(ruleOption.endWith, true, "end");
       endWith = reg.test(value);
       if(!endWith) {
         message = "不符合模板中 字符结尾 定义的校验规则";
@@ -313,7 +307,7 @@ export const checkString = (ruleOption, value) => {
       }
       // 非数字  
       if(isY(ruleOption.otherLimit.notContainCN)) {
-        let regCN = /\p{Unified_Ideograph}/u;
+        let regCN = /[\u4e00-\u9fa5]/;
         if(regCN.test(value)) {
           message = "附加限制: 非汉字";
           console.log(message);
