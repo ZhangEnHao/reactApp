@@ -410,7 +410,7 @@ class State {
               "chParamTableColId": "0F940827999D4BE18896F359BAE5EDB0",
               "require": "Y",
               "validateType": "VALIDAT_STRING",
-              "validateContent": '{"hide":"Y","mustIn":{"english":"Y","lowercase":"Y","uppercase":"Y","number":"Y","nonzero":"Y","other":"N","otherValue":""},"mustContain":{"english":"Y","lowercase":"N","uppercase":"Y","number":"Y","other":"Y","otherValue":"name,age"},"startWith":{"english":"N","lowercase":"N","uppercase":"N","number":"Y","other":"N","otherValue":""},"endWith":{"english":"N","lowercase":"N","uppercase":"N","number":"N","other":"Y","otherValue":"#"},"notContain":{"active":"Y","value":"@,#"},"stringLength":{"min":1,"max":12},"otherLimit":{"notContainSpace":"Y","notContainCN":"Y"},"message":""}',
+              "validateContent": '{"hide":"Y","mustIn":{"english":"Y","lowercase":"Y","uppercase":"Y","number":"Y","nonzero":"Y","other":"N","otherValue":""},"mustContain":{"english":"Y","lowercase":"N","uppercase":"Y","number":"Y","other":"Y","otherValue":"name,age"},"startWith":{"english":"N","lowercase":"N","uppercase":"N","number":"Y","other":"N","otherValue":""},"endWith":{"english":"N","lowercase":"N","uppercase":"N","number":"Y","other":"N","otherValue":""},"notContain":{"active":"Y","value":"@,#"},"stringLength":{"min":1,"max":12},"otherLimit":{"notContainSpace":"Y","notContainCN":"Y"},"message":""}',
               "id": "3B03047F6D394EF7A3ABAB8122A84A58"
             }
           ]
