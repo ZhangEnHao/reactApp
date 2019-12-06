@@ -165,14 +165,11 @@ export const strFor = (object, flag, seat) => {
     }
   }
 
-  if(isY(object.other) && object.otherVlue) {// 其他复选框   其他数值
-    if(flag) {
-      for(let i = 0, len = object.otherVlue.length; i < len; i++) {
-        regArr.push(object.otherVlue[i]);
-      }
-    }else {
-      regArr.push(object.otherVlue);
-    }
+  if(isY(object.other) && object.otherValue !== "") {// 其他复选框   其他数值
+    let otherValues = object.otherValue.split(",");
+    otherValues.forEach(value => {
+      regArr.push(value);
+    })
   }
 
   if(flag){
@@ -183,9 +180,8 @@ export const strFor = (object, flag, seat) => {
       }else if(seat === "end") {
         end = item;
       }
-      return `[${item}]`
-    })
-
+      return `${item}`
+    });
     if(start) {
       let index = mustArr.indexOf(start);
       mustArr.splice(index, 1);
@@ -203,65 +199,104 @@ export const strFor = (object, flag, seat) => {
         if(mustArr.length > 1) {
           console.log("字符开头或结尾校验规则定义错误");
         }
+        // 开头或结尾
         return new RegExp(`${mustArr.join("")}`);
       }
     }else {
-      return new RegExp(`${mustArr.join("{1,}")}{1,}`);
+      // 必须含字符[且]
+      let mustReg = mustArr.map(must => {
+        return new RegExp(`[${must}]{1,}`);
+      });
+      return mustReg
     }
   }else {
-    return new RegExp(`[${regArr.join("")}]+`);
+    // 全部为[或]
+    return new RegExp(`[${regArr.join("")}]`);
   }
 }
 
 // 校验字符串
 export const checkString = (ruleOption, value) => {
   let message;
-  let mustIn, mustContain, startWith, endWith;
+  let mustIn, startWith, endWith;
   for(let key in ruleOption) {
     if(key === "mustIn" && JSON.stringify(ruleOption.mustIn) !== "{}") {//全部为[或]
       let reg = strFor(ruleOption.mustIn);
-      console.log("全部为[或]", reg);
       mustIn = reg.test(value);
       if(!mustIn) {
         message = "不符合模板中 全部为[或] 定义的校验规则";
+        console.log(reg, message);
+        if(ruleOption.message && ruleOption.message !== "") {
+          message = ruleOption.message;
+        }
       }
     }
     if(key === "mustContain" && JSON.stringify(ruleOption.mustContain) !== "{}") {// 必须含字符[且]
-      let reg = strFor(ruleOption.mustContain, true);
-      console.log("必须含字符[且]", reg);
-      mustContain = reg.test(value);
-      if(!mustContain){
+      let regList = strFor(ruleOption.mustContain, true);
+      let flag = true;
+      regList.forEach(reg => {
+        let isMust = reg.test(value);
+        if(!isMust) {
+          flag = false;
+        }
+      });
+
+      if(!flag){
         message = "不符合模板中 必须含字符[且] 定义的校验规则";
+        console.log(regList, message);
+        if(ruleOption.message && ruleOption.message !== "") {
+          message = ruleOption.message;
+        }
       }
     }
     if(key === "startWith" && JSON.stringify(ruleOption.startWith) !== "{}") {// 字符开头
       let reg = strFor(ruleOption.startWith, true, "start");
-      console.log("字符开头", reg);
       startWith = reg.test(value);
       if(!startWith) {
         message = "不符合模板中 字符开头 定义的校验规则";
+        console.log(reg, message);
+        if(ruleOption.message && ruleOption.message !== "") {
+          message = ruleOption.message;
+        }
       }
     }
     if(key === "endWith" && JSON.stringify(ruleOption.endWith) !== "{}") {// 字符结尾
       let reg = strFor(ruleOption.startWith, true, "end");
-      console.log("字符结尾", reg);
       endWith = reg.test(value);
       if(!endWith) {
         message = "不符合模板中 字符结尾 定义的校验规则";
+        console.log(reg, message);
+        if(ruleOption.message && ruleOption.message !== "") {
+          message = ruleOption.message;
+        }
       }
     }
     if(key === "notContain" && JSON.stringify(ruleOption.notContain) !== "{}") {// 不包含字符
       if(isY(ruleOption.notContain.active)) {
-        let reg = new RegExp(ruleOption.notContain.value);
-        console.log("不可包含字符", reg);
-        if (reg.test(value)) {
-          message = `不可包含字符“${ruleOption.notContain.value}”`
+        let notContainList = ruleOption.notContain.value.split(",");
+        let flag = false;
+        notContainList.forEach(notContain => {
+          let reg = new RegExp(notContain);
+          if (reg.test(value)) {
+            flag = true;
+          }
+        })
+        if (flag) {
+          message = `不可包含字符“${ruleOption.notContain.value}”`;
+          console.log(notContainList, message);
+          if(ruleOption.message && ruleOption.message !== "") {
+            message = ruleOption.message;
+          }
         }
       }
     }
     if(key === "stringLength" && JSON.stringify(ruleOption.stringLength) !== "{}") {// 长度
       if (value.length < ruleOption.stringLength.min || value.length > ruleOption.stringLength.max) {
-        message = `字符串长度为${ruleOption.stringLength.min}-${ruleOption.stringLength.max}`
+        message = `字符串长度为${ruleOption.stringLength.min}-${ruleOption.stringLength.max}`;
+        console.log(message);
+        if(ruleOption.message && ruleOption.message !== "") {
+          message = ruleOption.message;
+        }
       }
     }
     if(key === "otherLimit" && JSON.stringify(ruleOption.otherLimit) !== "{}") {// 附加限制
@@ -270,21 +305,25 @@ export const checkString = (ruleOption, value) => {
         let regSpace = /(^\s+)|(\s+$)|\s+/g;
         if(regSpace.test(value)) {
           message = "附加限制: 不包含空格";
+          console.log(message);
+          if(ruleOption.message && ruleOption.message !== "") {
+            message = ruleOption.message;
+          }
         }      
       }
       // 非数字  
       if(isY(ruleOption.otherLimit.notContainCN)) {
-        let regCN = /\d/;
+        let regCN = /\p{Unified_Ideograph}/u;
         if(regCN.test(value)) {
-          message = "附加限制: 非数字";
+          message = "附加限制: 非汉字";
+          console.log(message);
+          if(ruleOption.message && ruleOption.message !== "") {
+            message = ruleOption.message;
+          }
         }       
       }
 
     }
-  }
-
-  if(ruleOption.message && ruleOption.message !== "") {
-    message = ruleOption.message;
   }
   
   return message
